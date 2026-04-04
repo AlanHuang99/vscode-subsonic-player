@@ -5,6 +5,12 @@ A music player extension for VS Code that connects to [Navidrome](https://www.na
 ![VS Code](https://img.shields.io/badge/VS%20Code-1.85+-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
+## Screenshots
+
+| Player with synced lyrics | Playlist detail view |
+|:---:|:---:|
+| ![Player](media/screenshot-player.png) | ![Playlist](media/screenshot-playlist.png) |
+
 ## Features
 
 - **Library browsing** - Browse artists, albums, and songs from your server
