@@ -38,6 +38,8 @@ jobs:
 
       - name: Publish to Open VSX
         if: env.OVSX_PAT != ''
-        run: npx ovsx publish subsonic-player.vsix -p "$OVSX_PAT"
+        run: |
+          npx ovsx create-namespace alanhuang -p "$OVSX_PAT" || true
+          npx ovsx publish subsonic-player.vsix -p "$OVSX_PAT"
         env:
           OVSX_PAT: ${{ secrets.OVSX_PAT }}

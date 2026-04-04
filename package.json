@@ -2,7 +2,7 @@
   "name": "subsonic-player",
   "displayName": "Subsonic Player",
   "description": "A music player for VS Code that connects to Navidrome/Subsonic servers",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "publisher": "alanhuang",
   "license": "MIT",
   "repository": {
