@@ -1,0 +1,154 @@
+{
+  "name": "subsonic-player",
+  "displayName": "Subsonic Player",
+  "description": "A music player for VS Code that connects to Navidrome/Subsonic servers",
+  "version": "0.1.0",
+  "publisher": "alanhuang",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alanhuang/vscode-subsonic-player"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "music",
+    "player",
+    "navidrome",
+    "subsonic",
+    "audio"
+  ],
+  "icon": "media/icon.png",
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "subsonicPlayer.openPlayer",
+        "title": "Open Music Player",
+        "category": "Subsonic Player",
+        "icon": "$(play)"
+      },
+      {
+        "command": "subsonicPlayer.addServer",
+        "title": "Add Server",
+        "category": "Subsonic Player",
+        "icon": "$(add)"
+      },
+      {
+        "command": "subsonicPlayer.switchServer",
+        "title": "Switch Server",
+        "category": "Subsonic Player",
+        "icon": "$(server)"
+      },
+      {
+        "command": "subsonicPlayer.removeServer",
+        "title": "Remove Server",
+        "category": "Subsonic Player"
+      },
+      {
+        "command": "subsonicPlayer.showPlaylist",
+        "title": "Show Playlist",
+        "category": "Subsonic Player"
+      },
+      {
+        "command": "subsonicPlayer.playPause",
+        "title": "Play / Pause",
+        "category": "Subsonic Player"
+      },
+      {
+        "command": "subsonicPlayer.next",
+        "title": "Next Track",
+        "category": "Subsonic Player"
+      },
+      {
+        "command": "subsonicPlayer.previous",
+        "title": "Previous Track",
+        "category": "Subsonic Player"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "subsonicPlayer",
+          "title": "Music",
+          "icon": "$(library)"
+        }
+      ]
+    },
+    "views": {
+      "subsonicPlayer": [
+        {
+          "id": "subsonicPlayer.library",
+          "name": "Library"
+        },
+        {
+          "id": "subsonicPlayer.playlists",
+          "name": "Playlists"
+        },
+        {
+          "id": "subsonicPlayer.queue",
+          "name": "Queue"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Subsonic Player",
+      "properties": {
+        "subsonicPlayer.serverUrl": {
+          "type": "string",
+          "default": "",
+          "description": "Subsonic/Navidrome server URL (e.g., http://localhost:4533)"
+        },
+        "subsonicPlayer.username": {
+          "type": "string",
+          "default": "",
+          "description": "Username for the Subsonic server"
+        },
+        "subsonicPlayer.password": {
+          "type": "string",
+          "default": "",
+          "description": "(Deprecated) Use 'Subsonic Player: Add Server' command instead. Password stored here will be migrated to secure storage automatically.",
+          "markdownDeprecationMessage": "Use the **Subsonic Player: Add Server** command instead. Passwords are now stored securely."
+        }
+      }
+    },
+    "keybindings": [
+      {
+        "command": "subsonicPlayer.playPause",
+        "key": "ctrl+alt+p",
+        "mac": "cmd+alt+p"
+      },
+      {
+        "command": "subsonicPlayer.next",
+        "key": "ctrl+alt+right",
+        "mac": "cmd+alt+right"
+      },
+      {
+        "command": "subsonicPlayer.previous",
+        "key": "ctrl+alt+left",
+        "mac": "cmd+alt+left"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.3.0",
+    "@vscode/vsce": "^3.0.0"
+  },
+  "dependencies": {
+    "md5": "^2.3.0"
+  }
+}
