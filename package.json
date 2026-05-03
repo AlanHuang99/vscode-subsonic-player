@@ -2,12 +2,12 @@
   "name": "subsonic-player",
   "displayName": "Music Player for VS Code",
   "description": "A VS Code music player for Navidrome and Subsonic-compatible servers",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "publisher": "alanhuang",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/alanhuang/vscode-subsonic-player"
+    "url": "https://github.com/AlanHuang99/vscode-subsonic-player"
   },
   "engines": {
     "vscode": "^1.85.0"
