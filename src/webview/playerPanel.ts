@@ -1,5 +1,6 @@
+import * as crypto from 'crypto';
 import * as vscode from 'vscode';
-import { Song, StructuredLyric, SubsonicClient } from '../api/subsonic';
+import { Song, StructuredLyric } from '../api/subsonic';
 
 export class PlayerPanel {
   public static currentPanel: PlayerPanel | undefined;
@@ -57,12 +58,20 @@ export class PlayerPanel {
     });
   }
 
-  updateLyrics(lyrics: StructuredLyric[]) {
-    this._panel.webview.postMessage({ type: 'lyrics', lyrics });
+  updateLyrics(songId: string, lyrics: StructuredLyric[]) {
+    this._panel.webview.postMessage({ type: 'lyrics', songId, lyrics });
   }
 
   updateState(state: { isPlaying: boolean; position?: number; duration?: number }) {
     this._panel.webview.postMessage({ type: 'state', ...state });
+  }
+
+  togglePlayPause() {
+    this._panel.webview.postMessage({ type: 'playPause' });
+  }
+
+  stopPlayback() {
+    this._panel.webview.postMessage({ type: 'stop' });
   }
 
   dispose() {
@@ -75,12 +84,15 @@ export class PlayerPanel {
   }
 
   private _getHtml(): string {
+    const nonce = getNonce();
+
     return /*html*/ `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${this._panel.webview.cspSource} http: https: data:; media-src http: https:; style-src ${this._panel.webview.cspSource} 'nonce-${nonce}'; script-src 'nonce-${nonce}';">
+  <style nonce="${nonce}">
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: var(--vscode-font-family);
@@ -324,20 +336,40 @@ export class PlayerPanel {
     .lyrics-line.past {
       opacity: 0.55;
     }
-    .lyrics-empty {
-      text-align: center;
-      opacity: 0.3;
-      padding: 20px;
-      font-size: 13px;
-    }
-  </style>
+	    .lyrics-empty {
+	      text-align: center;
+	      opacity: 0.3;
+	      padding: 20px;
+	      font-size: 13px;
+	    }
+	    .hidden {
+	      display: none !important;
+	    }
+	    .seek-input {
+	      position: fixed;
+	      top: 50%;
+	      left: 50%;
+	      transform: translate(-50%, -50%);
+	      background: var(--vscode-input-background);
+	      color: var(--vscode-input-foreground);
+	      border: 1px solid var(--vscode-input-border);
+	      padding: 8px 12px;
+	      border-radius: 6px;
+	      font-size: 16px;
+	      text-align: center;
+	      width: 120px;
+	      z-index: 9999;
+	      outline: none;
+	      font-family: var(--vscode-font-family);
+	    }
+	  </style>
 </head>
 <body>
-  <div class="player-container">
-    <div class="cover-art">
-      <div class="no-cover" id="noCover">&#9835;</div>
-      <img id="coverImg" style="display:none" />
-    </div>
+	  <div class="player-container">
+	    <div class="cover-art">
+	      <div class="no-cover" id="noCover">&#9835;</div>
+	      <img id="coverImg" class="hidden" alt="" />
+	    </div>
 
     <div class="track-info">
       <div class="track-title" id="title">No track playing</div>
@@ -360,10 +392,10 @@ export class PlayerPanel {
       <button id="prevBtn" title="Previous">
         <svg viewBox="0 0 24 24"><path d="M6 19V5"/><path d="m18 5-8 7 8 7"/></svg>
       </button>
-      <button class="play-btn" id="playBtn" title="Play/Pause">
-        <svg viewBox="0 0 24 24" id="playIcon"><polygon points="6 3 20 12 6 21 6 3" fill="currentColor" stroke="none"/></svg>
-        <svg viewBox="0 0 24 24" id="pauseIcon" style="display:none"><rect x="14" y="4" width="4" height="16" rx="1" fill="currentColor" stroke="none"/><rect x="6" y="4" width="4" height="16" rx="1" fill="currentColor" stroke="none"/></svg>
-      </button>
+	      <button class="play-btn" id="playBtn" title="Play/Pause">
+	        <svg viewBox="0 0 24 24" id="playIcon"><polygon points="6 3 20 12 6 21 6 3" fill="currentColor" stroke="none"/></svg>
+	        <svg viewBox="0 0 24 24" id="pauseIcon" class="hidden"><rect x="14" y="4" width="4" height="16" rx="1" fill="currentColor" stroke="none"/><rect x="6" y="4" width="4" height="16" rx="1" fill="currentColor" stroke="none"/></svg>
+	      </button>
       <button id="nextBtn" title="Next">
         <svg viewBox="0 0 24 24"><path d="m6 5 8 7-8 7"/><path d="M18 5v14"/></svg>
       </button>
@@ -385,7 +417,7 @@ export class PlayerPanel {
 
   <audio id="audio"></audio>
 
-  <script>
+	  <script nonce="${nonce}">
     const vscode = acquireVsCodeApi();
     const audio = document.getElementById('audio');
     const coverImg = document.getElementById('coverImg');
@@ -416,7 +448,8 @@ export class PlayerPanel {
     // Shuffle & Repeat state
     let shuffleOn = false;
     // repeatMode: 0 = off, 1 = repeat all, 2 = repeat one
-    let repeatMode = 0;
+	    let repeatMode = 0;
+	    let currentSongId = null;
     // Lyrics state
     let lyricsLines = []; // {start: ms, value: string}
     let isSynced = false;
@@ -461,15 +494,15 @@ export class PlayerPanel {
       }
     });
 
-    audio.addEventListener('play', () => {
-      playIcon.style.display = 'none';
-      pauseIcon.style.display = 'block';
-    });
+	    audio.addEventListener('play', () => {
+	      playIcon.classList.add('hidden');
+	      pauseIcon.classList.remove('hidden');
+	    });
 
-    audio.addEventListener('pause', () => {
-      playIcon.style.display = 'block';
-      pauseIcon.style.display = 'none';
-    });
+	    audio.addEventListener('pause', () => {
+	      playIcon.classList.remove('hidden');
+	      pauseIcon.classList.add('hidden');
+	    });
 
     playBtn.addEventListener('click', () => {
       if (audio.paused) { audio.play(); } else { audio.pause(); }
@@ -521,16 +554,12 @@ export class PlayerPanel {
     function promptSeek() {
       const dur = getDuration();
       if (dur <= 0) return;
-      // Use a simple inline input overlay
-      const input = document.createElement('input');
-      input.type = 'text';
-      input.placeholder = 'mm:ss';
-      input.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);' +
-        'background:var(--vscode-input-background);color:var(--vscode-input-foreground);' +
-        'border:1px solid var(--vscode-input-border);padding:8px 12px;border-radius:6px;' +
-        'font-size:16px;text-align:center;width:120px;z-index:9999;outline:none;' +
-        'font-family:var(--vscode-font-family);';
-      document.body.appendChild(input);
+	      // Use a simple inline input overlay
+	      const input = document.createElement('input');
+	      input.type = 'text';
+	      input.placeholder = 'mm:ss';
+	      input.className = 'seek-input';
+	      document.body.appendChild(input);
       input.focus();
 
       function finish() {
@@ -560,7 +589,7 @@ export class PlayerPanel {
     totalTimeEl.addEventListener('click', promptSeek);
 
     // --- Synced Lyrics ---
-    function renderLyrics() {
+	    function renderLyrics() {
       // Clear existing lyrics (keep empty message element)
       lyricsContainer.innerHTML = '';
 
@@ -570,7 +599,27 @@ export class PlayerPanel {
         empty.textContent = 'No lyrics available';
         lyricsContainer.appendChild(empty);
         return;
-      }
+	    }
+
+	    function resetPlayer() {
+	      audio.pause();
+	      audio.removeAttribute('src');
+	      audio.load();
+	      currentSongId = null;
+	      songDuration = 0;
+	      lyricsLines = [];
+	      isSynced = false;
+	      titleEl.textContent = 'No track playing';
+	      artistEl.textContent = 'Select a song from the library';
+	      albumEl.textContent = '';
+	      currentTimeEl.textContent = '0:00';
+	      totalTimeEl.textContent = '0:00';
+	      progressFill.style.width = '0%';
+	      coverImg.removeAttribute('src');
+	      coverImg.classList.add('hidden');
+	      noCover.classList.remove('hidden');
+	      renderLyrics();
+	    }
 
       lyricsLines.forEach((line, i) => {
         const el = document.createElement('div');
@@ -630,9 +679,10 @@ export class PlayerPanel {
     // --- Message handling ---
     window.addEventListener('message', (event) => {
       const msg = event.data;
-      if (msg.type === 'track') {
-        // Store API duration (in seconds) as fallback
-        songDuration = msg.song.duration || 0;
+	      if (msg.type === 'track') {
+	        currentSongId = msg.song.id;
+	        // Store API duration (in seconds) as fallback
+	        songDuration = msg.song.duration || 0;
         // Reset lyrics
         lyricsLines = [];
         isSynced = false;
@@ -643,18 +693,20 @@ export class PlayerPanel {
         titleEl.textContent = msg.song.title;
         artistEl.textContent = msg.song.artist;
         albumEl.textContent = msg.song.album;
-        totalTimeEl.textContent = formatTime(songDuration);
-        if (msg.coverUrl) {
-          coverImg.src = msg.coverUrl;
-          coverImg.style.display = 'block';
-          noCover.style.display = 'none';
-        } else {
-          coverImg.style.display = 'none';
-          noCover.style.display = 'flex';
-        }
-      }
-      if (msg.type === 'lyrics') {
-        const allLyrics = msg.lyrics || [];
+	        totalTimeEl.textContent = formatTime(songDuration);
+	        if (msg.coverUrl) {
+	          coverImg.src = msg.coverUrl;
+	          coverImg.classList.remove('hidden');
+	          noCover.classList.add('hidden');
+	        } else {
+	          coverImg.removeAttribute('src');
+	          coverImg.classList.add('hidden');
+	          noCover.classList.remove('hidden');
+	        }
+	      }
+	      if (msg.type === 'lyrics') {
+	        if (msg.songId !== currentSongId) return;
+	        const allLyrics = msg.lyrics || [];
         // Prefer synced lyrics
         const synced = allLyrics.find(l => l.synced);
         const unsynced = allLyrics.find(l => !l.synced);
@@ -668,12 +720,19 @@ export class PlayerPanel {
         }
         renderLyrics();
       }
-      if (msg.type === 'playPause') {
-        if (audio.paused) { audio.play(); } else { audio.pause(); }
-      }
-    });
-  </script>
+	      if (msg.type === 'playPause') {
+	        if (audio.paused) { audio.play(); } else { audio.pause(); }
+	      }
+	      if (msg.type === 'stop') {
+	        resetPlayer();
+	      }
+	    });
+	  </script>
 </body>
 </html>`;
   }
+}
+
+function getNonce(): string {
+  return crypto.randomBytes(16).toString('hex');
 }

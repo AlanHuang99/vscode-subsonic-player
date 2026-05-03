@@ -14,6 +14,7 @@ export interface Artist {
   name: string;
   albumCount?: number;
   coverArt?: string;
+  starred?: string;
 }
 
 export interface Album {
@@ -26,6 +27,7 @@ export interface Album {
   duration: number;
   year?: number;
   genre?: string;
+  starred?: string;
 }
 
 export interface Song {
@@ -42,6 +44,7 @@ export interface Song {
   genre?: string;
   suffix?: string;
   bitRate?: number;
+  starred?: string;
 }
 
 export interface Playlist {
@@ -55,6 +58,12 @@ export interface Playlist {
 }
 
 export interface SearchResult {
+  artists: Artist[];
+  albums: Album[];
+  songs: Song[];
+}
+
+export interface StarredResult {
   artists: Artist[];
   albums: Album[];
   songs: Song[];
@@ -79,6 +88,7 @@ export class SubsonicClient {
   private clientName = 'VSCodeSubsonicPlayer';
   private apiVersion = '1.16.1';
   private ndToken: string | null = null;
+  private requestTimeoutMs = 15000;
 
   constructor(config: SubsonicConfig) {
     this.config = config;
@@ -108,9 +118,32 @@ export class SubsonicClient {
     return url.toString();
   }
 
+  private assertConfigured() {
+    if (!this.config.serverUrl || !this.config.username) {
+      throw new Error('No Subsonic/Navidrome server is configured.');
+    }
+  }
+
+  private async fetchWithTimeout(url: string, init: RequestInit = {}): Promise<Response> {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), this.requestTimeoutMs);
+
+    try {
+      return await fetch(url, { ...init, signal: controller.signal });
+    } catch (err: any) {
+      if (err?.name === 'AbortError') {
+        throw new Error(`Request timed out after ${this.requestTimeoutMs / 1000}s`);
+      }
+      throw err;
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+
   private async request<T>(endpoint: string, params: Record<string, string> = {}): Promise<T> {
+    this.assertConfigured();
     const url = this.buildUrl(endpoint, params);
-    const response = await fetch(url);
+    const response = await this.fetchWithTimeout(url);
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
@@ -140,6 +173,7 @@ export class SubsonicClient {
           name: artist.name,
           albumCount: artist.albumCount,
           coverArt: artist.coverArt,
+          starred: artist.starred,
         });
       }
     }
@@ -154,52 +188,23 @@ export class SubsonicClient {
         name: res.artist.name,
         albumCount: res.artist.albumCount,
         coverArt: res.artist.coverArt,
+        starred: res.artist.starred,
       },
-      albums: (res.artist.album || []).map((a: any) => ({
-        id: a.id,
-        name: a.name,
-        artist: a.artist,
-        artistId: a.artistId,
-        coverArt: a.coverArt,
-        songCount: a.songCount,
-        duration: a.duration,
-        year: a.year,
-        genre: a.genre,
-      })),
+      albums: (res.artist.album || []).map((a: any) => this.mapAlbum(a)),
     };
   }
 
   async getAlbum(id: string): Promise<{ album: Album; songs: Song[] }> {
     const res = await this.request<any>('getAlbum', { id });
     return {
-      album: {
-        id: res.album.id,
-        name: res.album.name,
-        artist: res.album.artist,
-        artistId: res.album.artistId,
-        coverArt: res.album.coverArt,
-        songCount: res.album.songCount,
-        duration: res.album.duration,
-        year: res.album.year,
-        genre: res.album.genre,
-      },
+      album: this.mapAlbum(res.album),
       songs: (res.album.song || []).map((s: any) => this.mapSong(s)),
     };
   }
 
   async getAlbumList(type: string = 'recent', size: number = 50): Promise<Album[]> {
     const res = await this.request<any>('getAlbumList2', { type, size: size.toString() });
-    return (res.albumList2?.album || []).map((a: any) => ({
-      id: a.id,
-      name: a.name,
-      artist: a.artist,
-      artistId: a.artistId,
-      coverArt: a.coverArt,
-      songCount: a.songCount,
-      duration: a.duration,
-      year: a.year,
-      genre: a.genre,
-    }));
+    return (res.albumList2?.album || []).map((a: any) => this.mapAlbum(a));
   }
 
   async getPlaylists(): Promise<Playlist[]> {
@@ -237,10 +242,11 @@ export class SubsonicClient {
 
   private async navidromeLogin(): Promise<string> {
     if (this.ndToken) { return this.ndToken; }
+    this.assertConfigured();
 
     const loginUrl = `${this.config.serverUrl}/auth/login`;
     log.appendLine(`[navidromeLogin] POST ${loginUrl}`);
-    const response = await fetch(loginUrl, {
+    const response = await this.fetchWithTimeout(loginUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -269,14 +275,14 @@ export class SubsonicClient {
     for (const [key, value] of Object.entries(params)) {
       url.searchParams.set(key, value);
     }
-    const response = await fetch(url.toString(), {
+    const response = await this.fetchWithTimeout(url.toString(), {
       headers: { 'x-nd-authorization': `Bearer ${token}` },
     });
     if (response.status === 401) {
       // Token expired, retry once
       this.ndToken = null;
       const newToken = await this.navidromeLogin();
-      const retry = await fetch(url.toString(), {
+      const retry = await this.fetchWithTimeout(url.toString(), {
         headers: { 'x-nd-authorization': `Bearer ${newToken}` },
       });
       if (!retry.ok) { throw new Error(`HTTP ${retry.status}`); }
@@ -341,19 +347,25 @@ export class SubsonicClient {
         name: a.name,
         albumCount: a.albumCount,
         coverArt: a.coverArt,
+        starred: a.starred,
       })),
-      albums: (res.searchResult3?.album || []).map((a: any) => ({
+      albums: (res.searchResult3?.album || []).map((a: any) => this.mapAlbum(a)),
+      songs: (res.searchResult3?.song || []).map((s: any) => this.mapSong(s)),
+    };
+  }
+
+  async getStarred(): Promise<StarredResult> {
+    const res = await this.request<any>('getStarred2');
+    return {
+      artists: (res.starred2?.artist || []).map((a: any) => ({
         id: a.id,
         name: a.name,
-        artist: a.artist,
-        artistId: a.artistId,
+        albumCount: a.albumCount,
         coverArt: a.coverArt,
-        songCount: a.songCount,
-        duration: a.duration,
-        year: a.year,
-        genre: a.genre,
+        starred: a.starred,
       })),
-      songs: (res.searchResult3?.song || []).map((s: any) => this.mapSong(s)),
+      albums: (res.starred2?.album || []).map((a: any) => this.mapAlbum(a)),
+      songs: (res.starred2?.song || []).map((s: any) => this.mapSong(s)),
     };
   }
 
@@ -372,6 +384,22 @@ export class SubsonicClient {
 
   async scrobble(songId: string): Promise<void> {
     await this.request('scrobble', { id: songId });
+  }
+
+  async starSong(songId: string): Promise<void> {
+    await this.request('star', { id: songId });
+  }
+
+  async unstarSong(songId: string): Promise<void> {
+    await this.request('unstar', { id: songId });
+  }
+
+  async starAlbum(albumId: string): Promise<void> {
+    await this.request('star', { albumId });
+  }
+
+  async unstarAlbum(albumId: string): Promise<void> {
+    await this.request('unstar', { albumId });
   }
 
   async getLyrics(songId: string): Promise<StructuredLyric[]> {
@@ -395,6 +423,21 @@ export class SubsonicClient {
     }
   }
 
+  private mapAlbum(a: any): Album {
+    return {
+      id: a.id,
+      name: a.name,
+      artist: a.artist,
+      artistId: a.artistId,
+      coverArt: a.coverArt,
+      songCount: a.songCount,
+      duration: a.duration,
+      year: a.year,
+      genre: a.genre,
+      starred: a.starred,
+    };
+  }
+
   private mapSong(s: any): Song {
     return {
       id: s.id,
@@ -410,6 +453,7 @@ export class SubsonicClient {
       genre: s.genre,
       suffix: s.suffix,
       bitRate: s.bitRate,
+      starred: s.starred,
     };
   }
 }

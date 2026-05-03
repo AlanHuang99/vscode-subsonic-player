@@ -1,8 +1,12 @@
 .vscode/**
 .vscode-test/**
+.claude/**
+.github/**
+ref/**
 src/**
 .gitignore
+eslint.config.js
 tsconfig.json
 node_modules/**
 **/*.ts
-!out/**
+**/*.map

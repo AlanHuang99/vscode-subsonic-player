@@ -1,8 +1,8 @@
 {
   "name": "subsonic-player",
-  "displayName": "Subsonic Player",
-  "description": "A music player for VS Code that connects to Navidrome/Subsonic servers",
-  "version": "0.1.2",
+  "displayName": "Music Player for VS Code",
+  "description": "A VS Code music player for Navidrome and Subsonic-compatible servers",
+  "version": "0.2.0",
   "publisher": "alanhuang",
   "license": "MIT",
   "repository": {
@@ -51,11 +51,6 @@
         "category": "Subsonic Player"
       },
       {
-        "command": "subsonicPlayer.showPlaylist",
-        "title": "Show Playlist",
-        "category": "Subsonic Player"
-      },
-      {
         "command": "subsonicPlayer.playPause",
         "title": "Play / Pause",
         "category": "Subsonic Player"
@@ -69,8 +64,385 @@
         "command": "subsonicPlayer.previous",
         "title": "Previous Track",
         "category": "Subsonic Player"
+      },
+      {
+        "command": "subsonicPlayer.search",
+        "title": "Search Library",
+        "category": "Subsonic Player",
+        "icon": "$(search)"
+      },
+      {
+        "command": "subsonicPlayer.playRandom",
+        "title": "Play Random Songs",
+        "category": "Subsonic Player",
+        "icon": "$(shuffle)"
+      },
+      {
+        "command": "subsonicPlayer.refresh",
+        "title": "Refresh Library",
+        "category": "Subsonic Player",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "subsonicPlayer.clearQueue",
+        "title": "Clear Queue",
+        "category": "Subsonic Player",
+        "icon": "$(clear-all)"
+      },
+      {
+        "command": "subsonicPlayer.playAlbum",
+        "title": "Play Album",
+        "category": "Subsonic Player",
+        "icon": "$(play)"
+      },
+      {
+        "command": "subsonicPlayer.showAlbum",
+        "title": "Open Album",
+        "category": "Subsonic Player",
+        "icon": "$(open-preview)"
+      },
+      {
+        "command": "subsonicPlayer.playAlbumNext",
+        "title": "Play Album Next",
+        "category": "Subsonic Player",
+        "icon": "$(debug-step-over)"
+      },
+      {
+        "command": "subsonicPlayer.addAlbumToQueue",
+        "title": "Add Album to Queue",
+        "category": "Subsonic Player",
+        "icon": "$(list-unordered)"
+      },
+      {
+        "command": "subsonicPlayer.toggleFavoriteAlbum",
+        "title": "Toggle Album Favorite",
+        "category": "Subsonic Player",
+        "icon": "$(star-full)"
+      },
+      {
+        "command": "subsonicPlayer.showPlaylist",
+        "title": "Open Playlist",
+        "category": "Subsonic Player",
+        "icon": "$(list-tree)"
+      },
+      {
+        "command": "subsonicPlayer.playPlaylist",
+        "title": "Play Playlist",
+        "category": "Subsonic Player",
+        "icon": "$(play)"
+      },
+      {
+        "command": "subsonicPlayer.playPlaylistNext",
+        "title": "Play Playlist Next",
+        "category": "Subsonic Player",
+        "icon": "$(debug-step-over)"
+      },
+      {
+        "command": "subsonicPlayer.addPlaylistToQueue",
+        "title": "Add Playlist to Queue",
+        "category": "Subsonic Player",
+        "icon": "$(list-unordered)"
+      },
+      {
+        "command": "subsonicPlayer.playFromPlaylist",
+        "title": "Play Track",
+        "category": "Subsonic Player",
+        "icon": "$(play)"
+      },
+      {
+        "command": "subsonicPlayer.playPlaylistSongNext",
+        "title": "Play Track Next",
+        "category": "Subsonic Player",
+        "icon": "$(debug-step-over)"
+      },
+      {
+        "command": "subsonicPlayer.addPlaylistSongToQueue",
+        "title": "Add Track to Queue",
+        "category": "Subsonic Player",
+        "icon": "$(list-unordered)"
+      },
+      {
+        "command": "subsonicPlayer.playSingleSong",
+        "title": "Play Song",
+        "category": "Subsonic Player",
+        "icon": "$(play)"
+      },
+      {
+        "command": "subsonicPlayer.playSongNext",
+        "title": "Play Song Next",
+        "category": "Subsonic Player",
+        "icon": "$(debug-step-over)"
+      },
+      {
+        "command": "subsonicPlayer.addSongToQueue",
+        "title": "Add Song to Queue",
+        "category": "Subsonic Player",
+        "icon": "$(list-unordered)"
+      },
+      {
+        "command": "subsonicPlayer.toggleFavoriteSong",
+        "title": "Toggle Track Favorite",
+        "category": "Subsonic Player",
+        "icon": "$(star-full)"
+      },
+      {
+        "command": "subsonicPlayer.playFromQueue",
+        "title": "Play From Queue",
+        "category": "Subsonic Player",
+        "icon": "$(play)"
+      },
+      {
+        "command": "subsonicPlayer.moveQueueItemUp",
+        "title": "Move Up",
+        "category": "Subsonic Player",
+        "icon": "$(arrow-up)"
+      },
+      {
+        "command": "subsonicPlayer.moveQueueItemDown",
+        "title": "Move Down",
+        "category": "Subsonic Player",
+        "icon": "$(arrow-down)"
+      },
+      {
+        "command": "subsonicPlayer.removeFromQueue",
+        "title": "Remove from Queue",
+        "category": "Subsonic Player",
+        "icon": "$(trash)"
       }
     ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "subsonicPlayer.playAlbum",
+          "when": "false"
+        },
+        {
+          "command": "subsonicPlayer.showAlbum",
+          "when": "false"
+        },
+        {
+          "command": "subsonicPlayer.playAlbumNext",
+          "when": "false"
+        },
+        {
+          "command": "subsonicPlayer.addAlbumToQueue",
+          "when": "false"
+        },
+        {
+          "command": "subsonicPlayer.toggleFavoriteAlbum",
+          "when": "false"
+        },
+        {
+          "command": "subsonicPlayer.showPlaylist",
+          "when": "false"
+        },
+        {
+          "command": "subsonicPlayer.playPlaylist",
+          "when": "false"
+        },
+        {
+          "command": "subsonicPlayer.playPlaylistNext",
+          "when": "false"
+        },
+        {
+          "command": "subsonicPlayer.addPlaylistToQueue",
+          "when": "false"
+        },
+        {
+          "command": "subsonicPlayer.playFromPlaylist",
+          "when": "false"
+        },
+        {
+          "command": "subsonicPlayer.playPlaylistSongNext",
+          "when": "false"
+        },
+        {
+          "command": "subsonicPlayer.addPlaylistSongToQueue",
+          "when": "false"
+        },
+        {
+          "command": "subsonicPlayer.playSingleSong",
+          "when": "false"
+        },
+        {
+          "command": "subsonicPlayer.playSongNext",
+          "when": "false"
+        },
+        {
+          "command": "subsonicPlayer.addSongToQueue",
+          "when": "false"
+        },
+        {
+          "command": "subsonicPlayer.toggleFavoriteSong",
+          "when": "false"
+        },
+        {
+          "command": "subsonicPlayer.playFromQueue",
+          "when": "false"
+        },
+        {
+          "command": "subsonicPlayer.moveQueueItemUp",
+          "when": "false"
+        },
+        {
+          "command": "subsonicPlayer.moveQueueItemDown",
+          "when": "false"
+        },
+        {
+          "command": "subsonicPlayer.removeFromQueue",
+          "when": "false"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "subsonicPlayer.search",
+          "when": "view == subsonicPlayer.library",
+          "group": "navigation@1"
+        },
+        {
+          "command": "subsonicPlayer.playRandom",
+          "when": "view == subsonicPlayer.library",
+          "group": "navigation@2"
+        },
+        {
+          "command": "subsonicPlayer.refresh",
+          "when": "view == subsonicPlayer.library || view == subsonicPlayer.playlists",
+          "group": "navigation@3"
+        },
+        {
+          "command": "subsonicPlayer.clearQueue",
+          "when": "view == subsonicPlayer.queue",
+          "group": "navigation@1"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "subsonicPlayer.showAlbum",
+          "when": "view == subsonicPlayer.library && viewItem == album",
+          "group": "inline@1"
+        },
+        {
+          "command": "subsonicPlayer.playAlbum",
+          "when": "view == subsonicPlayer.library && viewItem == album",
+          "group": "play@1"
+        },
+        {
+          "command": "subsonicPlayer.playAlbumNext",
+          "when": "view == subsonicPlayer.library && viewItem == album",
+          "group": "queue@1"
+        },
+        {
+          "command": "subsonicPlayer.addAlbumToQueue",
+          "when": "view == subsonicPlayer.library && viewItem == album",
+          "group": "queue@2"
+        },
+        {
+          "command": "subsonicPlayer.toggleFavoriteAlbum",
+          "when": "view == subsonicPlayer.library && viewItem == album",
+          "group": "favorite@1"
+        },
+        {
+          "command": "subsonicPlayer.playSingleSong",
+          "when": "view == subsonicPlayer.library && viewItem == song",
+          "group": "inline@1"
+        },
+        {
+          "command": "subsonicPlayer.playSongNext",
+          "when": "view == subsonicPlayer.library && viewItem == song",
+          "group": "queue@1"
+        },
+        {
+          "command": "subsonicPlayer.addSongToQueue",
+          "when": "view == subsonicPlayer.library && viewItem == song",
+          "group": "queue@2"
+        },
+        {
+          "command": "subsonicPlayer.toggleFavoriteSong",
+          "when": "view == subsonicPlayer.library && viewItem == song",
+          "group": "favorite@1"
+        },
+        {
+          "command": "subsonicPlayer.openPlayer",
+          "when": "view == subsonicPlayer.library && viewItem == nowPlayingSong",
+          "group": "inline@1"
+        },
+        {
+          "command": "subsonicPlayer.playPause",
+          "when": "view == subsonicPlayer.library && viewItem == nowPlayingSong",
+          "group": "play@1"
+        },
+        {
+          "command": "subsonicPlayer.toggleFavoriteSong",
+          "when": "view == subsonicPlayer.library && viewItem == nowPlayingSong",
+          "group": "favorite@1"
+        },
+        {
+          "command": "subsonicPlayer.showPlaylist",
+          "when": "view == subsonicPlayer.playlists && viewItem == playlist",
+          "group": "inline@1"
+        },
+        {
+          "command": "subsonicPlayer.playPlaylist",
+          "when": "view == subsonicPlayer.playlists && viewItem == playlist",
+          "group": "play@1"
+        },
+        {
+          "command": "subsonicPlayer.playPlaylistNext",
+          "when": "view == subsonicPlayer.playlists && viewItem == playlist",
+          "group": "queue@1"
+        },
+        {
+          "command": "subsonicPlayer.addPlaylistToQueue",
+          "when": "view == subsonicPlayer.playlists && viewItem == playlist",
+          "group": "queue@2"
+        },
+        {
+          "command": "subsonicPlayer.playFromPlaylist",
+          "when": "view == subsonicPlayer.playlists && viewItem == playlistSong",
+          "group": "inline@1"
+        },
+        {
+          "command": "subsonicPlayer.playPlaylistSongNext",
+          "when": "view == subsonicPlayer.playlists && viewItem == playlistSong",
+          "group": "queue@1"
+        },
+        {
+          "command": "subsonicPlayer.addPlaylistSongToQueue",
+          "when": "view == subsonicPlayer.playlists && viewItem == playlistSong",
+          "group": "queue@2"
+        },
+        {
+          "command": "subsonicPlayer.toggleFavoriteSong",
+          "when": "view == subsonicPlayer.playlists && viewItem == playlistSong",
+          "group": "favorite@1"
+        },
+        {
+          "command": "subsonicPlayer.playFromQueue",
+          "when": "view == subsonicPlayer.queue && viewItem == queueItem",
+          "group": "inline@1"
+        },
+        {
+          "command": "subsonicPlayer.moveQueueItemUp",
+          "when": "view == subsonicPlayer.queue && viewItem == queueItem",
+          "group": "navigation@1"
+        },
+        {
+          "command": "subsonicPlayer.moveQueueItemDown",
+          "when": "view == subsonicPlayer.queue && viewItem == queueItem",
+          "group": "navigation@2"
+        },
+        {
+          "command": "subsonicPlayer.removeFromQueue",
+          "when": "view == subsonicPlayer.queue && viewItem == queueItem",
+          "group": "destructive@1"
+        },
+        {
+          "command": "subsonicPlayer.toggleFavoriteSong",
+          "when": "view == subsonicPlayer.queue && viewItem == queueItem",
+          "group": "favorite@1"
+        }
+      ]
+    },
     "viewsContainers": {
       "activitybar": [
         {
@@ -139,16 +511,16 @@
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "lint": "eslint src --ext ts",
+    "lint": "eslint src",
     "package": "vsce package"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
     "@types/vscode": "^1.85.0",
-    "typescript": "^5.3.0",
-    "@vscode/vsce": "^3.0.0"
-  },
-  "dependencies": {
-    "md5": "^2.3.0"
+    "@typescript-eslint/eslint-plugin": "^8.59.1",
+    "@typescript-eslint/parser": "^8.59.1",
+    "@vscode/vsce": "^3.0.0",
+    "eslint": "^10.3.0",
+    "typescript": "^5.3.0"
   }
 }

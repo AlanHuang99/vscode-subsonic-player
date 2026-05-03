@@ -31,11 +31,11 @@ class PlaylistSongItem extends vscode.TreeItem {
   ) {
     super(song.title, vscode.TreeItemCollapsibleState.None);
     this.contextValue = 'playlistSong';
-    this.iconPath = new vscode.ThemeIcon('play');
+    this.iconPath = new vscode.ThemeIcon(song.starred ? 'star-full' : 'play');
     this.description = `${song.artist} — ${song.album}`;
     const mins = Math.floor(song.duration / 60);
     const secs = song.duration % 60;
-    this.tooltip = `${song.title}\n${song.artist} — ${song.album}\n${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    this.tooltip = `${song.title}\n${song.artist} — ${song.album}\n${mins}:${secs < 10 ? '0' : ''}${secs}${song.starred ? '\nFavorite track' : ''}`;
     this.command = {
       command: 'subsonicPlayer.playFromPlaylist',
       title: 'Play',

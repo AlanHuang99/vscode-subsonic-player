@@ -19,7 +19,11 @@ jobs:
 
       - run: npm ci
 
+      - run: npm run lint
+
       - run: npm run compile
+
+      - run: npm audit
 
       - name: Package VSIX
         run: npx @vscode/vsce package -o subsonic-player.vsix

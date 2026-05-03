@@ -1,9 +1,9 @@
 import * as crypto from 'crypto';
 import * as vscode from 'vscode';
-import { Playlist, Song } from '../api/subsonic';
+import { Album, Song } from '../api/subsonic';
 
-export class PlaylistPanel {
-  public static currentPanel: PlaylistPanel | undefined;
+export class AlbumPanel {
+  public static currentPanel: AlbumPanel | undefined;
   private readonly _panel: vscode.WebviewPanel;
   private _disposables: vscode.Disposable[] = [];
   private _onCommand: (command: string, data?: any) => void;
@@ -27,15 +27,15 @@ export class PlaylistPanel {
   static createOrShow(onCommand: (command: string, data?: any) => void) {
     const column = vscode.ViewColumn.One;
 
-    if (PlaylistPanel.currentPanel) {
-      PlaylistPanel.currentPanel._panel.reveal(column);
-      PlaylistPanel.currentPanel._onCommand = onCommand;
+    if (AlbumPanel.currentPanel) {
+      AlbumPanel.currentPanel._panel.reveal(column);
+      AlbumPanel.currentPanel._onCommand = onCommand;
       return;
     }
 
     const panel = vscode.window.createWebviewPanel(
-      'subsonicPlaylist',
-      'Playlist',
+      'subsonicAlbum',
+      'Album',
       column,
       {
         enableScripts: true,
@@ -43,16 +43,16 @@ export class PlaylistPanel {
       },
     );
 
-    PlaylistPanel.currentPanel = new PlaylistPanel(panel, onCommand);
+    AlbumPanel.currentPanel = new AlbumPanel(panel, onCommand);
   }
 
-  showPlaylist(playlist: Playlist, songs: Song[], coverUrls: Map<string, string>) {
-    this._panel.title = playlist.name;
-    this._panel.webview.html = this._getHtml(playlist, songs, coverUrls);
+  showAlbum(album: Album, songs: Song[], coverUrl: string) {
+    this._panel.title = album.name;
+    this._panel.webview.html = this._getHtml(album, songs, coverUrl);
   }
 
   dispose() {
-    PlaylistPanel.currentPanel = undefined;
+    AlbumPanel.currentPanel = undefined;
     this._panel.dispose();
     while (this._disposables.length) {
       const d = this._disposables.pop();
@@ -60,45 +60,40 @@ export class PlaylistPanel {
     }
   }
 
-  private _getHtml(playlist: Playlist, songs: Song[], coverUrls: Map<string, string>): string {
+  private _getHtml(album: Album, songs: Song[], coverUrl: string): string {
     const nonce = getNonce();
     const totalDuration = songs.reduce((sum, s) => sum + (s.duration || 0), 0);
     const totalMins = Math.floor(totalDuration / 60);
     const totalHrs = Math.floor(totalMins / 60);
     const remainMins = totalMins % 60;
     const durationStr = totalHrs > 0 ? `${totalHrs}h ${remainMins}m` : `${totalMins}m`;
-    const smartBadge = playlist.smart ? '<span class="badge smart">Smart</span>' : '';
+    const year = album.year ? ` &middot; ${album.year}` : '';
+    const genre = album.genre ? ` &middot; ${this._esc(album.genre)}` : '';
+    const favoriteLabel = album.starred ? '&#9733; Favorited' : '&#9734; Favorite';
 
     const songRows = songs.map((song, i) => {
       const mins = Math.floor(song.duration / 60);
       const secs = song.duration % 60;
       const timeStr = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-      const coverUrl = coverUrls.get(song.id) || '';
-      const coverHtml = coverUrl
-        ? `<img class="song-cover" src="${this._esc(coverUrl)}" alt="" />`
-        : `<div class="song-cover no-art">&#9835;</div>`;
+      const trackNo = song.track ?? i + 1;
       const favoriteIcon = song.starred ? '&#9733;' : '&#9734;';
 
       return `<tr class="song-row" data-index="${i}">
-        <td class="col-num">${i + 1}</td>
-        <td class="col-cover">${coverHtml}</td>
+        <td class="col-track">${trackNo}</td>
         <td class="col-info">
           <div class="song-title">${this._esc(song.title)}</div>
           <div class="song-meta">${this._esc(song.artist)}</div>
         </td>
-        <td class="col-album">${this._esc(song.album)}</td>
-        <td class="col-genre">${this._esc(song.genre || '')}</td>
-        <td class="col-year">${song.year || ''}</td>
         <td class="col-duration">${timeStr}</td>
         <td class="col-bitrate">${song.bitRate ? song.bitRate + ' kbps' : ''}</td>
         <td class="col-format">${this._esc(song.suffix || '')}</td>
-        <td class="col-actions">
-          <button class="icon-btn play-next-track-btn" data-index="${i}" title="Play next">+&#9654;</button>
-          <button class="icon-btn add-track-btn" data-index="${i}" title="Add to queue">+</button>
-          <button class="icon-btn favorite-track-btn" data-index="${i}" title="Toggle favorite">${favoriteIcon}</button>
-        </td>
+        <td class="col-action"><button class="icon-btn favorite-track-btn" data-index="${i}" title="Toggle favorite">${favoriteIcon}</button></td>
       </tr>`;
     }).join('\n');
+
+    const coverHtml = coverUrl
+      ? `<img src="${this._esc(coverUrl)}" alt="" />`
+      : '&#9835;';
 
     return /*html*/ `<!DOCTYPE html>
 <html lang="en">
@@ -123,15 +118,15 @@ export class PlaylistPanel {
       background: var(--vscode-sideBar-background);
     }
     .header-cover {
-      width: 100px;
-      height: 100px;
+      width: 120px;
+      height: 120px;
       border-radius: 8px;
       background: var(--vscode-editor-inactiveSelectionBackground);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 40px;
-      opacity: 0.3;
+      font-size: 44px;
+      opacity: 0.9;
       overflow: hidden;
       flex-shrink: 0;
     }
@@ -141,6 +136,13 @@ export class PlaylistPanel {
       object-fit: cover;
     }
     .header-info { flex: 1; min-width: 0; }
+    .eyebrow {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      opacity: 0.5;
+      margin-bottom: 6px;
+    }
     .header-info h1 {
       font-size: 22px;
       font-weight: 600;
@@ -151,54 +153,41 @@ export class PlaylistPanel {
     }
     .header-meta {
       font-size: 13px;
-      opacity: 0.6;
-    }
-    .badge {
-      display: inline-block;
-      font-size: 11px;
-      padding: 2px 8px;
-      border-radius: 10px;
-      margin-left: 8px;
-      vertical-align: middle;
-    }
-    .badge.smart {
-      background: var(--vscode-badge-background);
-      color: var(--vscode-badge-foreground);
+      opacity: 0.65;
     }
     .header-actions {
       display: flex;
       align-items: center;
       gap: 8px;
-      flex-shrink: 0;
       flex-wrap: wrap;
       justify-content: flex-end;
+      flex-shrink: 0;
     }
-    .playlist-action-btn {
+    .album-action-btn, .icon-btn {
+      border: none;
+      cursor: pointer;
+      white-space: nowrap;
+      font-family: var(--vscode-font-family);
+    }
+    .album-action-btn {
       background: var(--vscode-button-background);
       color: var(--vscode-button-foreground);
-      border: none;
       padding: 8px 14px;
       border-radius: 20px;
       font-size: 13px;
       font-weight: 600;
-      cursor: pointer;
-      white-space: nowrap;
-      flex-shrink: 0;
     }
-    .playlist-action-btn.secondary {
+    .album-action-btn.secondary {
       background: var(--vscode-button-secondaryBackground);
       color: var(--vscode-button-secondaryForeground);
     }
-    .playlist-action-btn:hover {
+    .album-action-btn:hover {
       background: var(--vscode-button-hoverBackground);
     }
-    .playlist-action-btn.secondary:hover {
+    .album-action-btn.secondary:hover {
       background: var(--vscode-button-secondaryHoverBackground);
     }
-    .table-wrapper {
-      overflow-x: auto;
-      padding: 0;
-    }
+    .table-wrapper { overflow-x: auto; }
     table {
       width: 100%;
       border-collapse: collapse;
@@ -226,45 +215,16 @@ export class PlaylistPanel {
       background: var(--vscode-list-hoverBackground);
     }
     tbody td {
-      padding: 8px 12px;
+      padding: 9px 12px;
       border-bottom: 1px solid var(--vscode-panel-border, transparent);
       vertical-align: middle;
     }
-    .col-num {
-      width: 40px;
+    .col-track {
+      width: 52px;
       text-align: center;
-      opacity: 0.4;
+      opacity: 0.45;
       font-variant-numeric: tabular-nums;
     }
-    .col-cover {
-      width: 48px;
-      min-width: 48px;
-      padding: 4px 8px;
-    }
-    .song-cover {
-      width: 36px;
-      height: 36px;
-      min-width: 36px;
-      min-height: 36px;
-      border-radius: 4px;
-      object-fit: cover;
-      display: block;
-      aspect-ratio: 1;
-      flex-shrink: 0;
-    }
-    .song-cover.no-art {
-      width: 36px;
-      height: 36px;
-      min-width: 36px;
-      min-height: 36px;
-      background: var(--vscode-editor-inactiveSelectionBackground);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
-      opacity: 0.3;
-    }
-    .col-info { min-width: 150px; }
     .song-title {
       font-weight: 500;
       overflow: hidden;
@@ -278,47 +238,33 @@ export class PlaylistPanel {
       text-overflow: ellipsis;
       white-space: nowrap;
     }
-    .col-album {
-      max-width: 200px;
-      overflow: hidden;
-      text-overflow: ellipsis;
+    .col-duration, .col-bitrate, .col-format {
       white-space: nowrap;
-      opacity: 0.7;
-    }
-    .col-genre, .col-year, .col-bitrate, .col-format {
-      white-space: nowrap;
-      opacity: 0.5;
+      opacity: 0.6;
       font-size: 12px;
     }
-	    .col-duration {
-	      white-space: nowrap;
-	      font-variant-numeric: tabular-nums;
-	      opacity: 0.6;
-	    }
-	    .col-actions {
-	      width: 112px;
-	      min-width: 112px;
-	      text-align: right;
-	      white-space: nowrap;
-	    }
-	    .icon-btn {
-	      width: 28px;
-	      height: 28px;
-	      border: none;
-	      border-radius: 50%;
-	      background: transparent;
-	      color: var(--vscode-foreground);
-	      cursor: pointer;
-	      font-size: 13px;
-	      font-family: var(--vscode-font-family);
-	    }
-	    .icon-btn:hover {
-	      background: var(--vscode-toolbar-hoverBackground);
-	      color: var(--vscode-button-background);
-	    }
-	    .empty {
-	      text-align: center;
-	      padding: 60px 20px;
+    .col-duration {
+      font-variant-numeric: tabular-nums;
+    }
+    .col-action {
+      width: 48px;
+      text-align: right;
+    }
+    .icon-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: transparent;
+      color: var(--vscode-foreground);
+      font-size: 15px;
+    }
+    .icon-btn:hover {
+      background: var(--vscode-toolbar-hoverBackground);
+      color: var(--vscode-button-background);
+    }
+    .empty {
+      text-align: center;
+      padding: 60px 20px;
       opacity: 0.4;
       font-size: 14px;
     }
@@ -326,15 +272,17 @@ export class PlaylistPanel {
 </head>
 <body>
   <div class="header">
-    <div class="header-cover">&#9835;</div>
+    <div class="header-cover">${coverHtml}</div>
     <div class="header-info">
-      <h1>${this._esc(playlist.name)}${smartBadge}</h1>
-      <div class="header-meta">${songs.length} songs &middot; ${durationStr}${playlist.comment ? ' &middot; ' + this._esc(playlist.comment) : ''}</div>
+      <div class="eyebrow">Album</div>
+      <h1>${this._esc(album.name)}</h1>
+      <div class="header-meta">${this._esc(album.artist)}${year}${genre} &middot; ${songs.length} songs &middot; ${durationStr}</div>
     </div>
     <div class="header-actions">
-      <button class="playlist-action-btn" id="playAllBtn">&#9654; Play All</button>
-      <button class="playlist-action-btn secondary" id="playNextBtn">Play Next</button>
-      <button class="playlist-action-btn secondary" id="addQueueBtn">Add to Queue</button>
+      <button class="album-action-btn" id="playAllBtn">&#9654; Play All</button>
+      <button class="album-action-btn secondary" id="playNextBtn">Play Next</button>
+      <button class="album-action-btn secondary" id="addQueueBtn">Add to Queue</button>
+      <button class="album-action-btn secondary" id="favoriteAlbumBtn">${favoriteLabel}</button>
     </div>
   </div>
 
@@ -344,22 +292,18 @@ export class PlaylistPanel {
       <thead>
         <tr>
           <th>#</th>
-          <th></th>
           <th>Title</th>
-          <th>Album</th>
-          <th>Genre</th>
-          <th>Year</th>
-	          <th>Duration</th>
-	          <th>Bitrate</th>
-	          <th>Format</th>
-	          <th></th>
-	        </tr>
+          <th>Duration</th>
+          <th>Bitrate</th>
+          <th>Format</th>
+          <th></th>
+        </tr>
       </thead>
       <tbody>
         ${songRows}
       </tbody>
     </table>
-  ` : '<div class="empty">This playlist has no songs</div>'}
+  ` : '<div class="empty">This album has no songs</div>'}
   </div>
 
   <script nonce="${nonce}">
@@ -374,38 +318,25 @@ export class PlaylistPanel {
     document.getElementById('addQueueBtn').addEventListener('click', () => {
       vscode.postMessage({ command: 'addToQueue' });
     });
+    document.getElementById('favoriteAlbumBtn').addEventListener('click', () => {
+      vscode.postMessage({ command: 'toggleFavoriteAlbum' });
+    });
 
-	    document.querySelectorAll('.song-row').forEach(row => {
-	      row.addEventListener('click', () => {
-	        const index = parseInt(row.dataset.index, 10);
-	        vscode.postMessage({ command: 'playSong', data: { index } });
-	      });
-	    });
+    document.querySelectorAll('.song-row').forEach(row => {
+      row.addEventListener('click', () => {
+        const index = parseInt(row.dataset.index, 10);
+        vscode.postMessage({ command: 'playSong', data: { index } });
+      });
+    });
 
-	    document.querySelectorAll('.play-next-track-btn').forEach(button => {
-	      button.addEventListener('click', (event) => {
-	        event.stopPropagation();
-	        const index = parseInt(button.dataset.index, 10);
-	        vscode.postMessage({ command: 'playSongNext', data: { index } });
-	      });
-	    });
-
-	    document.querySelectorAll('.add-track-btn').forEach(button => {
-	      button.addEventListener('click', (event) => {
-	        event.stopPropagation();
-	        const index = parseInt(button.dataset.index, 10);
-	        vscode.postMessage({ command: 'addSongToQueue', data: { index } });
-	      });
-	    });
-
-	    document.querySelectorAll('.favorite-track-btn').forEach(button => {
-	      button.addEventListener('click', (event) => {
-	        event.stopPropagation();
-	        const index = parseInt(button.dataset.index, 10);
-	        vscode.postMessage({ command: 'toggleFavoriteSong', data: { index } });
-	      });
-	    });
-	  </script>
+    document.querySelectorAll('.favorite-track-btn').forEach(button => {
+      button.addEventListener('click', (event) => {
+        event.stopPropagation();
+        const index = parseInt(button.dataset.index, 10);
+        vscode.postMessage({ command: 'toggleFavoriteSong', data: { index } });
+      });
+    });
+  </script>
 </body>
 </html>`;
   }

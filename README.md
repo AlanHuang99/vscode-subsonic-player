@@ -14,9 +14,13 @@ A music player extension for VS Code that connects to [Navidrome](https://www.na
 ## Features
 
 - **Library browsing** - Browse artists, albums, and songs from your server
+- **Album details** - Open albums with artwork, metadata, track rows, and queue actions
 - **Playlist support** - View and play playlists including Navidrome Smart Playlists (.nsp)
+- **Favorites** - Star and unstar albums or tracks, with favorite songs in the Library view
 - **Synced lyrics** - Display time-synced lyrics with click-to-seek
 - **Playback controls** - Play, pause, next, previous, shuffle, repeat (all/one)
+- **Now Playing** - See and favorite the active track from the Library view
+- **Queue management** - Play next, add to queue, remove tracks, reorder queue items
 - **Search** - Search across artists, albums, and songs
 - **Multi-server** - Add and switch between multiple Navidrome/Subsonic servers
 - **Secure credentials** - Passwords stored in VS Code's encrypted SecretStorage
@@ -40,6 +44,12 @@ A music player extension for VS Code that connects to [Navidrome](https://www.na
 | `Subsonic Player: Play / Pause` | Toggle playback |
 | `Subsonic Player: Next Track` | Skip to next track |
 | `Subsonic Player: Previous Track` | Go to previous track |
+| `Subsonic Player: Search Library` | Search songs and albums |
+| `Subsonic Player: Play Random Songs` | Start a random-song queue |
+| `Subsonic Player: Refresh Library` | Refresh library and playlist views |
+| `Subsonic Player: Clear Queue` | Remove all queued tracks |
+
+Click albums to open their detail view. Open playlists for per-track play-next, add-to-queue, and favorite buttons. Right-click albums, songs, playlists, playlist tracks, now-playing tracks, or queue items for contextual playback, queue, and favorite actions.
 
 ## Keyboard Shortcuts
 
