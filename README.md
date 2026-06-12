@@ -1,156 +1,124 @@
+<div align="center">
+
+<img src="https://raw.githubusercontent.com/AlanHuang99/vscode-subsonic-player/main/media/icon.png" alt="Music Player for VS Code" width="96" height="96" />
+
 # Music Player for VS Code
 
-A focused music player inside VS Code for people who keep their music on
-[Navidrome](https://www.navidrome.org/) or another
-[Subsonic-compatible](http://www.subsonic.org/pages/api.jsp) server.
+Listen to your [Navidrome](https://www.navidrome.org/) or [Subsonic-compatible](http://www.subsonic.org/pages/api.jsp) music library without leaving the editor.
 
 [![Open VSX](https://img.shields.io/open-vsx/v/alanhuang/subsonic-player?label=Open%20VSX)](https://open-vsx.org/extension/alanhuang/subsonic-player)
 [![Downloads](https://img.shields.io/open-vsx/dt/alanhuang/subsonic-player?label=downloads)](https://open-vsx.org/extension/alanhuang/subsonic-player)
+[![CI](https://github.com/AlanHuang99/vscode-subsonic-player/actions/workflows/ci.yml/badge.svg)](https://github.com/AlanHuang99/vscode-subsonic-player/actions/workflows/ci.yml)
 ![VS Code](https://img.shields.io/badge/VS%20Code-1.85+-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
+<br />
+
+<img src="https://raw.githubusercontent.com/AlanHuang99/vscode-subsonic-player/main/media/screenshot-player.png" alt="Player panel with artwork, transport controls, and synced lyrics" width="520" />
+
+</div>
+
+## Features
+
+- Navidrome and Subsonic-compatible servers (Subsonic API v1.16.1 or newer)
+- Multiple saved servers, with passwords kept in VS Code SecretStorage
+- Library browsing by favorite songs, recent albums, random albums, most played, and artists
+- Album and playlist detail views
+- Queue control: play now, play next, add to queue, reorder, remove, clear
+- Favorites for albums and tracks
+- Synced lyrics with click-to-seek
+- Keyboard shortcuts for play/pause, next, and previous
+- Streams audio from your server; it does not download tracks for offline use
+
+## Requirements
+
+- A running [Navidrome](https://www.navidrome.org/) or Subsonic-compatible server (Subsonic API v1.16.1 or newer)
+- VS Code 1.85 or newer, or another editor that uses the [Open VSX](https://open-vsx.org/) gallery
 
 ## Install
 
-The extension is published on Open VSX:
+The extension is published on Open VSX: https://open-vsx.org/extension/alanhuang/subsonic-player
 
-https://open-vsx.org/extension/alanhuang/subsonic-player
+If your editor uses Open VSX, search for **Music Player for VS Code** or `alanhuang.subsonic-player` in the Extensions view.
 
-If your editor uses Open VSX, search for **Music Player for VS Code** or
-`alanhuang.subsonic-player` in the Extensions view.
-
-If you use Microsoft VS Code and do not have Open VSX configured as your
-extension gallery, download the VSIX from the Open VSX page and install it with:
+If you use Microsoft VS Code without Open VSX configured as your extension gallery, download the VSIX from the Open VSX page and install it with:
 
 ```bash
 code --install-extension path/to/alanhuang.subsonic-player-*.vsix
 ```
 
-You can also install a downloaded VSIX from the Extensions view:
-`...` -> `Install from VSIX...`.
+You can also install a downloaded VSIX from the Extensions view: `...` → `Install from VSIX...`.
 
-## Why Use It
+## Getting started
 
-This extension is for listening without leaving the editor. It keeps the
-surface small: browse your library, open an album or playlist, build a queue,
-favorite tracks, and keep synced lyrics nearby while you work.
+1. Run **Subsonic Player: Add Server** and enter your server URL, username, and password.
+2. Open the **Music** view from the activity bar.
+3. Expand **Library**, open an album, and choose **Play All**.
 
-It supports:
+Run **Subsonic Player: Open Music Player** to show the player panel. It shows artwork, transport controls, volume, progress, repeat/shuffle, and synced lyrics when your server provides them.
 
-- Navidrome and Subsonic-compatible servers
-- Multiple saved servers with passwords stored in VS Code SecretStorage
-- Library browsing by favorite songs, recent albums, random albums, most played, and artists
-- Album and playlist detail views
-- Queue actions: play now, play next, add to queue, reorder, remove, clear
-- Favorites for albums and tracks
-- Synced lyrics with click-to-seek
-- Keyboard shortcuts for play/pause, next, and previous
+## Browse, queue, and favorite
 
-## Player
+Open an album or playlist to inspect its tracks before touching your queue. Each row has quick actions for play next, add to queue, and favorite; the detail header can play the whole album or playlist now, queue it next, or append it to the end.
 
-Open **Subsonic Player: Open Music Player** to show the player panel. The panel
-shows artwork, transport controls, volume, progress, repeat/shuffle, and synced
-lyrics when your server provides them.
+<div align="center">
 
-![Player with synced lyrics](https://raw.githubusercontent.com/AlanHuang99/vscode-subsonic-player/main/media/screenshot-player.png)
+<img src="https://raw.githubusercontent.com/AlanHuang99/vscode-subsonic-player/main/media/screenshot-playlist.png" alt="Playlist detail view next to the player panel" width="620" />
 
-## Playlists
+</div>
 
-Open a playlist to inspect the tracks before replacing your queue. Each row has
-quick actions for play next, add to queue, and favorite. The playlist header can
-play the whole playlist now, queue it next, or append it to the end.
+- **Build a queue** — right-click albums, playlists, playlist tracks, songs, or queue items, then choose **Play Next** or **Add to Queue**. Reorder or remove tracks from the **Queue** view.
+- **Use favorites** — favorite albums or tracks from context menus or detail views. Open **Library → Favorite Songs** to find starred tracks, or **Library → Now Playing** to favorite the active track without opening the player.
+- **Search** — run **Subsonic Player: Search Library**, pick a song or album, then choose **Play Now**, **Play Next**, or **Add to Queue**.
+- **Switch servers** — run **Subsonic Player: Switch Server** to pick another saved server, add a new one, or remove an old one.
 
-![Playlist detail view](https://raw.githubusercontent.com/AlanHuang99/vscode-subsonic-player/main/media/screenshot-playlist.png)
+## Keyboard shortcuts
 
-## Common Workflows
-
-Add a server:
-
-1. Run **Subsonic Player: Add Server**.
-2. Enter your server URL, username, and password.
-3. Open the **Music** activity bar view.
-
-Play an album:
-
-1. Expand **Library**.
-2. Open **Recent Albums**, **Random Albums**, **Most Played**, or an artist.
-3. Click an album to open the album detail view.
-4. Choose **Play All**, **Play Next**, or **Add to Queue**.
-
-Build a queue:
-
-1. Right-click albums, playlists, playlist tracks, songs, or queue items.
-2. Choose **Play Next** or **Add to Queue**.
-3. Reorder or remove tracks from the **Queue** view.
-
-Use favorites:
-
-1. Favorite albums or tracks from context menus or detail views.
-2. Open **Library -> Favorite Songs** to find starred tracks.
-3. Use **Library -> Now Playing** to favorite the active track without opening the player.
-
-Search:
-
-1. Run **Subsonic Player: Search Library**.
-2. Pick a song or album.
-3. Choose **Play Now**, **Play Next**, or **Add to Queue**.
-
-Switch servers:
-
-1. Run **Subsonic Player: Switch Server**.
-2. Pick another saved server, add a new server, or remove an old one.
-
-## Keyboard Shortcuts
-
-- `Ctrl+Alt+P` / `Cmd+Alt+P`: play or pause
-- `Ctrl+Alt+Right` / `Cmd+Alt+Right`: next track
-- `Ctrl+Alt+Left` / `Cmd+Alt+Left`: previous track
+| Action | Windows / Linux | macOS |
+| --- | --- | --- |
+| Play / Pause | `Ctrl+Alt+P` | `Cmd+Alt+P` |
+| Next track | `Ctrl+Alt+Right` | `Cmd+Alt+Right` |
+| Previous track | `Ctrl+Alt+Left` | `Cmd+Alt+Left` |
 
 ## Commands
 
-Most commands are available from the Command Palette under **Subsonic Player**:
+Available from the Command Palette under **Subsonic Player**:
 
-- Add Server
-- Switch Server
-- Remove Server
-- Open Music Player
-- Play / Pause
-- Next Track
-- Previous Track
-- Search Library
-- Play Random Songs
-- Refresh Library
-- Clear Queue
+| Command | Description |
+| --- | --- |
+| Add Server | Save a server URL, username, and password |
+| Switch Server | Choose, add, or remove a saved server |
+| Remove Server | Delete a saved server |
+| Open Music Player | Show the player panel |
+| Play / Pause, Next Track, Previous Track | Transport controls |
+| Search Library | Find a song or album |
+| Play Random Songs | Queue a set of random tracks |
+| Refresh Library | Reload library and playlist data |
+| Clear Queue | Empty the play queue |
 
-Context menus provide the more specific actions, such as opening albums,
-favoriting tracks, moving queue items, and adding individual songs to the queue.
+Context menus provide the more specific actions, such as opening albums, favoriting tracks, moving queue items, and adding individual songs to the queue.
 
 ## Compatibility
 
-Recommended server:
+[Navidrome](https://www.navidrome.org/) is the recommended server. Any server implementing the Subsonic API v1.16.1 or newer is also supported. Navidrome has the most complete experience because the extension can use its native playlist API for smart playlists.
 
-- [Navidrome](https://www.navidrome.org/)
-
-Also supported:
-
-- Servers implementing the Subsonic API v1.16.1 or newer
-
-Navidrome has the best experience because the extension can also use Navidrome's
-native playlist API for smart playlists.
-
-## Privacy And Security
+## Privacy and security
 
 - Server passwords are stored in VS Code's encrypted SecretStorage.
 - Legacy plain-text password settings are migrated automatically when possible.
 - The player streams audio directly from your configured server.
 - Webviews use Content Security Policy headers and nonce-based scripts.
 
-## Development
+## Build from source
+
+Prerequisites: Node.js 20 and npm.
 
 ```bash
+git clone https://github.com/AlanHuang99/vscode-subsonic-player.git
+cd vscode-subsonic-player
 npm ci
 npm run compile
 npm run lint
-npm audit
 ```
 
 Package a local VSIX:
@@ -165,11 +133,17 @@ Run the extension locally:
 2. Press `F5`.
 3. Test in the Extension Development Host window.
 
-Release notes:
+Releases are triggered by pushing a `v*` tag. The release workflow creates a GitHub Release and publishes to Open VSX. The extension is not published to the VS Code Marketplace.
 
-- Releases are triggered by pushing a `v*` tag.
-- The workflow creates a GitHub Release and publishes to Open VSX.
-- The extension is not published to the VS Code Marketplace.
+## Tech stack
+
+| Area | Implementation |
+| --- | --- |
+| Language | TypeScript |
+| Editor integration | VS Code Extension API — tree views and webviews |
+| Playback | HTML5 audio in a webview |
+| Server access | Subsonic API client |
+| Credentials | VS Code SecretStorage |
 
 ## Links
 
